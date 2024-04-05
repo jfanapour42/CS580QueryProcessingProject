@@ -101,8 +101,11 @@ void executeProblem1Experiments() {
 
     relation r3 = r1.naturalJoin(r2);
 
+    cout << "Relation R1: " << endl;
     cout << r1 << endl;
+    cout << "Relation R2: " << endl;
     cout << r2 << endl;
+    cout << "Join between relations R1 and R2: " << endl;
     cout << r3 << endl;
 }
 
@@ -192,11 +195,17 @@ void executeProblem2Experiments() {
     vector<relation> lineQuery{r1, r2, r3, r4};
     relation lineJoinResult = relation::executeLineJoin(lineQuery);
 
+    cout << "Relation R1: " << endl;
     cout << r1 << endl;
+    cout << "Relation R2: " << endl;
     cout << r2 << endl;
+    cout << "Relation R3: " << endl;
     cout << r3 << endl;
+    cout << "Relation R4: " << endl;
     cout << r4 << endl;
+    cout << "Result of chain of natural joins of R1, R2, R3, & R4: " << endl;
     cout << chain << endl;
+    cout << "Result of line join using Yanankakis algorithm (Problem 2) of R1, R2, R3, & R4: " << endl;
     cout << lineJoinResult << endl;
 }
 
@@ -286,11 +295,17 @@ void executeProblem3Experiments() {
     vector<relation> lineQuery{r1, r2, r3, r4};
     relation lineJoinResult = relation::executeLineJoinByChaining(lineQuery);
 
+    cout << "Relation R1: " << endl;
     cout << r1 << endl;
+    cout << "Relation R2: " << endl;
     cout << r2 << endl;
+    cout << "Relation R3: " << endl;
     cout << r3 << endl;
+    cout << "Relation R4: " << endl;
     cout << r4 << endl;
+    cout << "Result of chain of natural joins of R1, R2, R3, & R4: " << endl;
     cout << chain << endl;
+    cout << "Result of line join by chaining (Problem 3) of R1, R2, R3, & R4: " << endl;
     cout << lineJoinResult << endl;
 }
 
@@ -462,9 +477,23 @@ void executeProblem5Experiments() {
 }
 
 int main() {
+    cout << "Output for experiment 1: " << endl;
+    cout << "\n\n\n";
     executeProblem1Experiments();
+    cout << "\n\n\n";
+    cout << "Output for experiment 2: " << endl;
+    cout << "\n\n\n";
     executeProblem2Experiments();
+    cout << "\n\n\n";
+    cout << "Output for experiment 3: " << endl;
+    cout << "\n\n\n";
     executeProblem3Experiments();
+    cout << "\n\n\n";
+    cout << "Output for experiment 4: " << endl;
+    cout << "\n\n\n";
     executeProblem4Experiments();
+    cout << "\n\n\n";
+    cout << "Output for experiment 5: " << endl;
+    cout << "\n\n\n";
     executeProblem5Experiments();
 }
