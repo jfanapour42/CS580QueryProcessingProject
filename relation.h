@@ -29,12 +29,12 @@ class relation {
         int getColumnCount() const;
         int getColumnIndex(const string& attr) const;
         vector<string> getAttributes() const;
-        bool addAttribute(string attr);
+        bool addAttribute(const string& attr);
         bool addAttributes(vector<string>& attrs);
         vector<vector<int>> getData() const;
         void insertTuple(vector<int>& tup);
-        vector<int> getTuple(unsigned int idx) const;
-        relation project(string attr) const;
+        const vector<int> & getTuple(unsigned int idx) const;
+        relation project(const string& attr) const;
         relation project(vector<string>& attrs) const;
         string toString() const;
         relation& operator=(const relation& other);
@@ -48,9 +48,10 @@ class relation {
         unordered_map<int, vector<int>> buildMapForAttr(const string& attr) const;
         bool areRowsJoinable(int thisRow, int otherRow, const relation& other, unordered_set<string>& sharedAttr) const;
         vector<int> mergeRows(int thisRow, int otherRow, const relation& other, const vector<string>& unionAttr) const;
+        int max_element(int col) const;
 
-        static string rowToString(vector<int>& row, vector<int>& widths);
-        static string rowToString(vector<string>& row, vector<int>& widths);
+        static string rowToString(const vector<int>& row, const vector<int>& widths);
+        static string rowToString(const vector<string>& row, const vector<int>& widths);
         static unordered_set<string> getIntersection(vector<string> v1, vector<string> v2);
         static int sum(vector<int>& widths);
 

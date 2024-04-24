@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <climits>
 #include "relation.h"
 
 relation::relation() {
@@ -20,8 +21,6 @@ relation::relation(vector<string>& attrs) {
     int idx = 0;
     for (string attr : attrs) {
         this->attributes.emplace(attr, idx);
-        vector<int> v;
-        this->data.push_back(v);
         idx++;
     }
 }
@@ -32,8 +31,6 @@ relation::relation(const string& n, vector<string>& attrs) {
     int idx = 0;
     for (string attr : attrs) {
         this->attributes.emplace(attr, idx);
-        vector<int> v;
-        this->data.push_back(v);
         idx++;
     }
 }
@@ -55,13 +52,7 @@ void relation::setName(string n) {
 }
 
 int relation::getRowCount() const {
-    int colCount = this->data.size();
-    int rowCount = 0;
-    if (colCount != 0) {
-        rowCount = this->data[0].size();
-    }
-
-    return rowCount;
+    return this->data.size();
 }
 
 int relation::getColumnCount() const {
@@ -87,14 +78,15 @@ vector<string> relation::getAttributes() const {
     return keys;
 }
 
-bool relation::addAttribute(string attr) {
+bool relation::addAttribute(const string& attr) {
     if (this->attributes.count(attr) == 0) {
         int colCount = this->getColumnCount();
-        int rowCount = this->getRowCount();
 
         this->attributes.emplace(attr, colCount);
-        vector<int> v(rowCount, 0);
-        this->data.push_back(v);
+
+        for (auto row : this->data) {
+            row.push_back(0);
+        }
 
         return true;
     }
@@ -103,19 +95,24 @@ bool relation::addAttribute(string attr) {
 
 bool relation::addAttributes(vector<string>& attrs) {
     int colCount = this->getColumnCount();
-    int rowCount = this->getRowCount();
 
+    // Check that all strings in attrs do not already exist as attributes in relation
     for (string attr : attrs) {
-        if (this->attributes.count(attr) == 0) {
-            this->attributes.emplace(attr, colCount);
-            vector<int> v(rowCount, 0);
-            this->data.push_back(v);
-
-            colCount++;
-        } else {
+        if (this->attributes.count(attr) != 0) {
             return false;
         }
     }
+
+    for (string attr : attrs) {
+        this->attributes.emplace(attr, colCount);
+
+        for (auto row : this->data) {
+            row.push_back(0);
+        }
+
+        colCount++;
+    }
+
     return true;
 }
 
@@ -125,35 +122,29 @@ vector<vector<int>> relation::getData() const {
 
 void relation::insertTuple(vector<int>& tup) {
     if (tup.size() == this->getColumnCount()) {
-        for (int i = 0; i < tup.size(); i++) {
-            this->data[i].push_back(tup[i]);
-        }
+        this->data.push_back(tup);
     }
 }
 
-vector<int> relation::getTuple(unsigned int idx) const {
-    int colCount = this->getColumnCount();
-    int rowCount = this->getRowCount();
-    vector<int> v(colCount);
-
-    if (idx < rowCount) {
-        for (int i = 0; i < colCount; i++){
-            v[i] = this->data[i][idx];
-        }
+const vector<int>& relation::getTuple(unsigned int idx) const {
+    if (idx < this->getRowCount() && idx >= 0) {
+        return this->data.at(idx);
+    } else {
+        throw std::out_of_range("Index out of range!");
     }
-
-    return v;
 }
 
-relation relation::project(string attr) const {
+relation relation::project(const string& attr) const {
     relation res;
     int colIdx = this->getColumnIndex(attr);
+    int rowCount = this->getRowCount();
 
     if (colIdx != -1) {
         unordered_set<int> seenVals;
         res.addAttribute(attr);
 
-        for (int val : this->data[colIdx]) {
+        for (int i = 0; i < rowCount; i++) {
+            int val = this->data[i][colIdx];
             if (seenVals.count(val) == 0) {
                 seenVals.insert(val);
                 vector<int> tup{val};
@@ -187,7 +178,7 @@ relation relation::project(vector<string>& attrs) const {
             vector<int> tup;
 
             for (int idx : colIdxs) {
-                tup.push_back(this->data[idx][i]);
+                tup.push_back(this->data[i][idx]);
             }
 
             if (seenVals.count(tup) == 0) {
@@ -215,7 +206,7 @@ string relation::toString() const {
     }
 
     for (int i = 0; i < colCount; i++) {
-        int maxVal = *max_element(this->data[i].begin(), this->data[i].end());
+        int maxVal = this->max_element(i);
         widths[i] = max((int)(to_string(maxVal).size()) + 1, widths[i]);
     }
 
@@ -229,8 +220,7 @@ string relation::toString() const {
     res += temp + '\n';
 
     for (int i = 0; i < rowCount; i++) {
-        vector<int> tup = this->getTuple(i);
-        res += rowToString(tup, widths) + '\n';
+        res += rowToString(this->getTuple(i), widths) + '\n';
     }
 
     return res;
@@ -275,7 +265,7 @@ relation relation::naturalJoin(const relation& other) const{
         int thisKeyCol = this->getColumnIndex(keyAttr);
 
         for (int i = 0; i < this->getRowCount(); i++) {
-            int thisKeyVal = this->data[thisKeyCol][i];
+            int thisKeyVal = this->data[i][thisKeyCol];
             if (valMap.count(thisKeyVal) != 0) {
                 for (int idx : valMap[thisKeyVal]) {
                     if (this->areRowsJoinable(i, idx, other, sharedAttr)) {
@@ -373,7 +363,7 @@ unordered_map<int, vector<int>> relation::buildMapForAttr(const string& attr) co
     int colIdx = this->getColumnIndex(attr);
 
     for (int i = 0; i < this->getRowCount(); i++) {
-        int val = this->data[colIdx][i];
+        int val = this->data[i][colIdx];
 
         if (map.count(val) == 0) {
             vector<int> indexes;
@@ -410,16 +400,26 @@ vector<int> relation::mergeRows(int thisRow, int otherRow, const relation& other
         int otherCol = other.getColumnIndex(attr);
 
         if (thisCol != -1) {
-            res.push_back(this->data[thisCol][thisRow]);
+            res.push_back(this->data[thisRow][thisCol]);
         } else {
-            res.push_back(other.data[otherCol][otherRow]);
+            res.push_back(other.data[otherRow][otherCol]);
         }
     }
 
     return res;
 }
 
-string relation::rowToString(vector<int>& row, vector<int>& widths) {
+int relation::max_element(int col) const {
+    int maxVal = INT_MIN;
+
+    for (int i = 0; i < this->getRowCount(); i++) {
+        maxVal = max(maxVal, this->data[i][col]);
+    }
+
+    return maxVal;
+}
+
+string relation::rowToString(const vector<int>& row, const vector<int>& widths) {
     int rowCount = row.size();
     string res;
 
@@ -442,7 +442,7 @@ string relation::rowToString(vector<int>& row, vector<int>& widths) {
     return res;
 }
 
-string relation::rowToString(vector<string>& row, vector<int>& widths) {
+string relation::rowToString(const vector<string>& row, const vector<int>& widths) {
     int rowCount = row.size();
     string res;
 
