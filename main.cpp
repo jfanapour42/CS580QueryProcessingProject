@@ -37,8 +37,8 @@ double funcTime(F func, R& result, Args&&... args) {
  * Returns random integer in range from lb to ub inclusive.
  */
 int getRandomInt(int lb, int ub) {
-    unsigned seed = timeNow().time_since_epoch().count();
-    srand(seed);
+    //unsigned seed = timeNow().time_since_epoch().count();
+    //srand(seed);
 
     return (rand() % (ub - lb + 1)) + lb;
 }
@@ -477,6 +477,10 @@ void executeProblem5Experiments() {
 }
 
 int main() {
+    unsigned seed = timeNow().time_since_epoch().count();
+    //unsigned seed = 93483235;
+    srand(seed);
+
     cout << "Output for experiment 1: " << endl;
     cout << "\n\n\n";
     executeProblem1Experiments();

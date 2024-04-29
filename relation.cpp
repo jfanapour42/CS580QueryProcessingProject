@@ -312,7 +312,7 @@ relation relation::executeLineJoin(const vector<relation>& relations) {
     }
 
     for (int i = 1; i < k; i++) {
-        relation r = relations[i].semiJoin(relations[i-1]);
+        relation r = prunedRelations[i].semiJoin(prunedRelations[i-1]);
         prunedRelations[i] = r;
     }
 
