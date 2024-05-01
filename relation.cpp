@@ -245,6 +245,11 @@ std::ostream& operator<<(std::ostream& os, relation const& r)
  * Static join methods
  */
 
+/*
+ * Returns the result of a Full join between this relation and other relation (passed as argument)
+ * The key to implementation is the creation of the hash map H on the first shared attributes between the two
+ * relations. Values of the key attribute are mapped onto tuples the value occurs in within the first relation (this).
+ */
 relation relation::naturalJoin(const relation& other) const{
     vector<string> attr1 = this->getAttributes();
     vector<string> attr2 = other.getAttributes();
