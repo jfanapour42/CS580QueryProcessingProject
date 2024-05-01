@@ -246,9 +246,14 @@ std::ostream& operator<<(std::ostream& os, relation const& r)
  */
 
 /*
- * Returns the result of a Full join between this relation and other relation (passed as argument)
+ * Returns the result of a Full join between "this" relation and other relation (passed as argument)
  * The key to implementation is the creation of the hash map H on the first shared attributes between the two
- * relations. Values of the key attribute are mapped onto tuples the value occurs in within the first relation (this).
+ * relations. Values of the key attribute are mapped onto tuples the value occurs in within the second relation (other).
+ * Once the hashmap is created, we iterate through the tuples of "this" relation and check if any tuples in the other
+ * relation contain the current value for the keyed attribute using the hashmap. If this check returns tuples in the
+ * other relation, we then check that the values for all other shared attributes are equivalent between the current
+ * tuple in "this" relation and the tuple in the other relation. If this is true, then we can add the new merged tuple
+ * to the resultant full join relation.
  */
 relation relation::naturalJoin(const relation& other) const{
     vector<string> attr1 = this->getAttributes();
